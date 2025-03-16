@@ -70,7 +70,7 @@ export function Content() {
     };
 
     return (
-        <div class="w-full p-4">
+        <div class="w-full h-full p-4">
             <h1>Elemento Redimensionable y Arrastrable</h1>
             <button onClick={addTextElement} style={{ 'margin-right': '10px' }}>
                 Añadir Texto

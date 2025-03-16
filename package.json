@@ -27,14 +27,17 @@
         "vitest": "^3.0.0"
     },
     "dependencies": {
+        "@corvu/resizable": "^0.2.4",
         "@kobalte/core": "^0.13.9",
         "@solidjs/router": "^0.15.3",
         "@tailwindcss/vite": "^4.0.8",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "interactjs": "^1.10.27",
+        "lucide-solid": "^0.482.0",
         "solid-js": "^1.9.3",
         "tailwind-merge": "^2.5.3",
-        "tailwindcss-animate": "^1.0.7"
+        "tailwindcss-animate": "^1.0.7",
+        "zustand": "^5.0.3"
     }
 }
