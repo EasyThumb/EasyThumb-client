@@ -1,6 +1,6 @@
 import { Route, Router } from '@solidjs/router';
+import { CanvasProvider } from './context/CanvasContext';
 import { CanvasPage } from './features/Canvas';
-import { CanvasProvider } from './features/Canvas/context/CanvasContext';
 
 export default function App() {
     return (

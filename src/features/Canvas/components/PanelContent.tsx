@@ -1,6 +1,7 @@
+import { PhotosPanel } from '@/components/PhotosPanel';
 import { cn } from '@/libs/cn';
-import { SideBarPanelEnum } from '../context/CanvasContext';
-import { useCanvasContext } from '../hooks/useCanvasContext';
+import { SideBarPanelEnum } from '../../../context/CanvasContext';
+import { useCanvasContext } from '../../../hooks/useCanvasContext';
 
 export function PanelContent() {
     const { sidebarPanel } = useCanvasContext();
@@ -8,7 +9,7 @@ export function PanelContent() {
     const renderPanel = () => {
         switch (sidebarPanel()) {
             case SideBarPanelEnum.Text:
-                return <div>TEXT</div>;
+                return <PhotosPanel />;
             case SideBarPanelEnum.Photos:
                 return <div>PHOTOS</div>;
             case SideBarPanelEnum.Elements:

@@ -1,5 +1,5 @@
-import { SideBarPanelEnum } from '@/features/Canvas/context/CanvasContext';
-import { useCanvasContext } from '@/features/Canvas/hooks/useCanvasContext';
+import { SideBarPanelEnum } from '@/context/CanvasContext';
+import { useCanvasContext } from '@/hooks/useCanvasContext';
 import { LayoutTemplate, Shapes, Type } from 'lucide-solid';
 import { SidebarContent } from './SidebarContent';
 import { SidebarFooter } from './SidebarFooter';

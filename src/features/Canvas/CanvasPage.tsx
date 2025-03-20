@@ -1,10 +1,10 @@
 import { Sidebar } from '@/components/Sidebar';
 import { Resizable, ResizableHandle, ResizablePanel } from '@/components/ui/resizable';
+import { SideBarPanelEnum } from '../../context/CanvasContext';
 import { Content } from './components';
-import { SideBarPanelEnum } from './context/CanvasContext';
 
+import { useCanvasContext } from '../../hooks/useCanvasContext';
 import { PanelContent } from './components/PanelContent';
-import { useCanvasContext } from './hooks/useCanvasContext';
 
 export function CanvasPage() {
     const { sidebarPanel } = useCanvasContext();
