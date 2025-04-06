@@ -9,7 +9,7 @@ interface GalleryProps {
 }
 
 export const Gallery = (props: GalleryProps) => (
-    <div class={cn(props.className, 'overflow-y-auto max-h-[calc(100vh-200px)] grid grid-cols-2 gap-2 p-1')}>
+    <div class={cn(props.className, 'overflow-y-auto max-h-[calc(100vh-150px)] grid grid-cols-2 gap-2 p-1')}>
         {props.images.map((img) => (
             <GalleryItem
                 onClick={() => props.onClick(img.id)}

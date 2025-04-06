@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import { Search } from 'lucide-solid';
+import Search from 'lucide-solid/icons/search';
 
 import { createSignal } from 'solid-js';
 import Input from './Input';
@@ -28,7 +28,7 @@ export default function SearchInput(props: SearchInputProps) {
                 value={query()}
                 onInput={handleChange}
                 placeholder={props.placeHolder}
-                class="pl-10 pr-4 h-10 rounded-full border border-neutral-300 focus:ring-2 focus:ring-neutral-500"
+                class="w-full pl-10 pr-4 h-10 rounded-full border border-neutral-300 focus:ring-2 focus:ring-neutral-500"
             />
         </div>
     );

@@ -1,6 +1,8 @@
 import { SideBarPanelEnum } from '@/context/CanvasContext';
 import { useCanvasContext } from '@/hooks/useCanvasContext';
-import { LayoutTemplate, Shapes, Type } from 'lucide-solid';
+import LayoutTemplate from 'lucide-solid/icons/layout-template';
+import Shapes from 'lucide-solid/icons/shapes';
+import Type from 'lucide-solid/icons/type';
 import { SidebarContent } from './SidebarContent';
 import { SidebarFooter } from './SidebarFooter';
 import { SidebarHeader } from './SidebarHeader';

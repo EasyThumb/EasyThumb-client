@@ -1,0 +1,23 @@
+.gallery-item:hover::after {
+    content: '+';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    color: white;
+    opacity: 1;
+    transition: opacity 0.3s;
+}
+.gallery-item {
+    position: relative;
+}
+.gallery-item img {
+    transition: opacity 0.3s;
+}
+.gallery-item:hover img {
+    opacity: 0.9;
+}
+.gallery-item:hover::after {
+    opacity: 1;
+}

@@ -1,23 +1,46 @@
+import { useCanvasContext } from '@/hooks/useCanvasContext';
 import { CanvasElement } from '@/types';
 import interact from 'interactjs';
-import { createEffect, onCleanup } from 'solid-js';
+import { createEffect, createSignal, onCleanup } from 'solid-js';
 
 interface CanvasElementComponentProps {
     element: CanvasElement;
+    isSelected: boolean;
+    onDelete: (id: number) => void; // Función para eliminar el elemento
+    onUpdate: (id: number, updatedElement: Partial<CanvasElement>) => void;
+    onSelect: () => void;
 }
 
-export const InteractiveElement = (props: CanvasElementComponentProps) => {
-    const { element } = props;
-    let elementRef: HTMLDivElement | undefined;
+type PositionsHandler = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top' | 'bottom' | 'left' | 'right';
 
-    // Función que renderiza el contenido del canvas dependiendo del tipo de elemento
+export const InteractiveElement = (props: CanvasElementComponentProps) => {
+    // Props
+    const { element, onDelete } = props;
+
+    // Data
+    let elementRef: HTMLDivElement | undefined;
+    let imgRef: HTMLImageElement | undefined;
+
+    // Context
+    const { canvasPositions } = useCanvasContext();
+
+    // State
+    const [isCtrlPressed, setIsCtrlPressed] = createSignal(false);
+
+    // Callbacks
     const renderElement = () => {
         switch (element.type) {
             case 'text':
                 return (
                     <div
+                        contentEditable={props.isSelected}
+                        onInput={(e) => {
+                            const newText = (e.currentTarget as HTMLDivElement).innerText;
+                            props.onUpdate(element.id, { text: newText });
+                        }}
                         style={{
-                            'font-size': element.fontSize?.toString(),
+                            outline: 'none',
+                            'font-size': `${element.fontSize?.toString()}px`,
                             color: element.color,
                             'font-weight': 'bold',
                         }}
@@ -27,7 +50,7 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                 );
 
             case 'image':
-                return <img src={element.src} alt="Imagen" style={{ width: '100%', height: '100%' }} />;
+                return <img ref={imgRef} src={element.src} alt="Imagen" style={{ width: '100%', height: '100%' }} />;
 
             case 'svg':
                 return <div innerHTML={element.svgContent || ''} />;
@@ -37,10 +60,66 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
         }
     };
 
-    createEffect(() => {
-        // Si el ref no está definido, no hacemos nada
-        if (!elementRef) return;
+    const renderHandle = (positionsHandler: PositionsHandler) => {
+        const baseClasses = `
+          absolute 
+          ${positionsHandler == 'top' || positionsHandler == 'bottom' ? 'w-6' : 'w-4'} h-4 
+          bg-blue-500
+          rounded-full
+          border-4 border-white
+          cursor-pointer
+          z-10
+          shadow-md
+        `;
 
+        const positionClasses = {
+            'top-left': 'top-0 left-0 -translate-x-1/2 -translate-y-1/2 cursor-nwse-resize',
+            'top-right': 'top-0 right-0 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize',
+            'bottom-left': 'bottom-0 left-0 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize',
+            'bottom-right': 'bottom-0 right-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize',
+            top: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize',
+            right: 'top-1/2 right-0 translate-x-1/2 -translate-y-1/2 cursor-ew-resize',
+            bottom: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-ns-resize',
+            left: 'top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize',
+        };
+
+        return <div class={`${baseClasses} ${positionClasses[positionsHandler as keyof typeof positionClasses]}`} />;
+    };
+
+    // Effects
+    createEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if ((event.target as HTMLElement)?.isContentEditable) {
+                return;
+            }
+
+            if (event.key === 'Control' || event.key === 'Meta') {
+                setIsCtrlPressed(true);
+            }
+
+            // Detecta la tecla "Delete"
+            if (event.key === 'Delete' || event.key === 'Backspace') {
+                onDelete(element.id);
+            }
+        };
+
+        const handleKeyUp = (event: KeyboardEvent) => {
+            if (event.key === 'Control' || event.key === 'Meta') {
+                setIsCtrlPressed(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+
+        onCleanup(() => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
+        });
+    });
+
+    createEffect(() => {
+        if (!elementRef) return;
         const target = elementRef;
 
         interact(target)
@@ -48,22 +127,39 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                 edges: { left: true, right: true, bottom: true, top: true },
                 listeners: {
                     move(event) {
-                        const x = parseFloat(target.getAttribute('data-x') || '0');
-                        const y = parseFloat(target.getAttribute('data-y') || '0');
+                        const target = event.target;
 
-                        // Actualiza el tamaño del elemento
+                        // obtén valores anteriores
+                        let x = parseFloat(target.getAttribute('data-x') || '0');
+                        let y = parseFloat(target.getAttribute('data-y') || '0');
+
+                        // cambia tamaño visual
                         target.style.width = `${event.rect.width}px`;
                         target.style.height = `${event.rect.height}px`;
 
-                        // Ajusta la posición cuando se redimensiona desde los bordes izquierdo o superior
-                        target.style.transform = `translate(${x + event.deltaRect.left}px, ${y + event.deltaRect.top}px)`;
+                        // cambia posición visual (si estás redimensionando desde top o left)
+                        x += event.deltaRect.left;
+                        y += event.deltaRect.top;
 
-                        // Actualiza los atributos de posición
-                        target.setAttribute('data-x', (x + event.deltaRect.left).toString());
-                        target.setAttribute('data-y', (y + event.deltaRect.top).toString());
+                        target.style.transform = `translate(${x}px, ${y}px)`;
+                        target.setAttribute('data-x', x.toString());
+                        target.setAttribute('data-y', y.toString());
+                    },
+                    end(event) {
+                        const target = event.target;
 
-                        // Muestra el tamaño actual del elemento
-                        target.textContent = `${Math.round(event.rect.width)}×${Math.round(event.rect.height)}`;
+                        const x = parseFloat(target.getAttribute('data-x') || '0');
+                        const y = parseFloat(target.getAttribute('data-y') || '0');
+                        const width = parseFloat(target.style.width || '0');
+                        const height = parseFloat(target.style.height || '0');
+
+                        // actualiza estado final
+                        props.onUpdate(element.id, {
+                            position: { x, y },
+                            width,
+                            height,
+                            aspectRatio: width / height,
+                        });
                     },
                 },
                 modifiers: [
@@ -73,23 +169,36 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                     interact.modifiers.restrictSize({
                         min: { width: 100, height: 50 },
                     }),
-                    interact.modifiers.aspectRatio({
-                        ratio: 2,
-                        modifiers: [interact.modifiers.restrictSize({ max: 'parent' })],
-                    }),
+                    ...(isCtrlPressed() ? [interact.modifiers.aspectRatio()] : []),
                 ],
                 inertia: true,
             })
             .draggable({
                 listeners: {
                     move(event) {
-                        const x = parseFloat(target.getAttribute('data-x') || '0');
-                        const y = parseFloat(target.getAttribute('data-y') || '0');
+                        let x = parseFloat(target.getAttribute('data-x') || '0');
+                        let y = parseFloat(target.getAttribute('data-y') || '0');
 
-                        // Actualiza la posición del elemento
-                        target.style.transform = `translate(${x + event.dx}px, ${y + event.dy}px)`;
-                        target.setAttribute('data-x', (x + event.dx).toString());
-                        target.setAttribute('data-y', (y + event.dy).toString());
+                        x += event.dx;
+                        y += event.dy;
+
+                        target.style.transform = `translate(${x}px, ${y}px)`;
+                        target.setAttribute('data-x', x.toString());
+                        target.setAttribute('data-y', y.toString());
+                    },
+                    end(event) {
+                        const x = parseFloat(event.target.getAttribute('data-x') || '0');
+                        const y = parseFloat(event.target.getAttribute('data-y') || '0');
+
+                        const width = parseFloat(target.style.width || '0');
+                        const height = parseFloat(target.style.height || '0');
+
+                        props.onUpdate(element.id, {
+                            position: { x, y },
+                            width,
+                            height,
+                            aspectRatio: width / height,
+                        });
                     },
                 },
                 inertia: true,
@@ -99,6 +208,7 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                         endOnly: true,
                     }),
                 ],
+                autoScroll: true,
             });
 
         onCleanup(() => {
@@ -111,14 +221,36 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
             ref={elementRef}
             style={{
                 position: 'absolute',
-                top: `${element.y}px`,
-                left: `${element.x}px`,
-                width: `${element.width}px`,
-                height: `${element.height}px`,
-                'background-color': '#29e',
+                top: 0,
+                left: 0,
+                width: `${canvasPositions().get(element.id)?.width ?? element.width}px`,
+                height: `${canvasPositions().get(element.id)?.height ?? element.height}px`,
                 cursor: 'move',
+                transform: `translate(${canvasPositions().get(element.id)?.position.x ?? element.position.x}px, ${canvasPositions().get(element.id)?.position.y ?? element.position.y}px)`,
             }}
+            onClick={(e) => {
+                e.stopPropagation();
+                props.onSelect();
+            }}
+            data-x={canvasPositions().get(element.id)?.position.x ?? element.position.x}
+            data-y={canvasPositions().get(element.id)?.position.y ?? element.position.y}
         >
+            {props.isSelected && (
+                <>
+                    <div class="absolute inset-0 border-2 border-blue-500 pointer-events-none z-5 rounded" />
+                    <div>
+                        {renderHandle('top-left')}
+                        {renderHandle('top-right')}
+                        {renderHandle('bottom-left')}
+                        {renderHandle('bottom-right')}
+                        {renderHandle('top')}
+                        {renderHandle('right')}
+                        {renderHandle('bottom')}
+                        {renderHandle('left')}
+                    </div>
+                </>
+            )}
+
             {renderElement()}
         </div>
     );

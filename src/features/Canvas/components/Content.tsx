@@ -1,88 +1,45 @@
+import { useCanvasContext } from '@/hooks/useCanvasContext';
 import { CanvasElement } from '@/types';
 import { createSignal } from 'solid-js';
 import { InteractiveElement } from './InteractiveElement';
-
-interface TextElement extends CanvasElement {
-    type: 'text';
-    text: string;
-    fontSize: number;
-    color: string;
-}
-
-interface ImageElement extends CanvasElement {
-    type: 'image';
-    src: string;
-}
-
-interface SvgElement extends CanvasElement {
-    type: 'svg';
-    svgContent: string;
-}
+import './styles.css';
 
 export function Content() {
-    const [elements, setElements] = createSignal<CanvasElement[]>([]);
+    const { canvasElement, setCanvasElement, setCanvasPositions } = useCanvasContext();
+    const [selected, setSelected] = createSignal<number | null>(null);
 
-    const addTextElement = () => {
-        setElements((prevElements) => [
-            ...prevElements,
-            {
-                id: prevElements.length,
-                type: 'text',
-                x: 100,
-                y: 100,
-                width: 150,
-                height: 50,
-                text: 'Texto Nuevo',
-                fontSize: 20,
-                color: 'black',
-            } as TextElement,
-        ]);
-    };
+    function deleteCanvasElement(id: number) {
+        const elements = new Map(canvasElement());
+        elements.delete(id);
+        setCanvasElement(elements);
+    }
 
-    const addImageElement = () => {
-        setElements((prevElements) => [
-            ...prevElements,
-            {
-                id: prevElements.length,
-                type: 'image',
-                x: 200,
-                y: 200,
-                width: 150,
-                height: 150,
-                src: 'https://via.placeholder.com/150',
-            } as ImageElement,
-        ]);
-    };
-
-    const addSvgElement = () => {
-        setElements((prevElements) => [
-            ...prevElements,
-            {
-                id: prevElements.length,
-                type: 'svg',
-                x: 300,
-                y: 300,
-                width: 100,
-                height: 100,
-                svgContent: `<svg width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>`,
-            } as SvgElement,
-        ]);
-    };
+    function handleOnUpdate(id: number, updatedElement: Partial<CanvasElement>) {
+        setCanvasPositions((prev) => {
+            const updatedElements = new Map(prev);
+            const element = canvasElement().get(id);
+            if (element) {
+                updatedElements.set(id, { ...element, ...updatedElement });
+            }
+            return updatedElements;
+        });
+    }
 
     return (
         <div class="w-full h-full p-4">
-            <h1>Elemento Redimensionable y Arrastrable</h1>
-            <button onClick={addTextElement} style={{ 'margin-right': '10px' }}>
-                Añadir Texto
-            </button>
-            <button onClick={addImageElement} style={{ 'margin-right': '10px' }}>
-                Añadir Imagen
-            </button>
-            <button onClick={addSvgElement}>Añadir SVG</button>
             <div class="mt-5 w-full max-w-screen-lg h-[500px] border-2 border-dashed border-gray-400 relative overflow-hidden">
-                {elements().map((element) => (
-                    <InteractiveElement element={element} />
-                ))}
+                {Array.from(canvasElement().values()).map((item) => {
+                    console.log('render items again', item);
+                    return (
+                        <InteractiveElement
+                            element={item}
+                            isSelected={item.id == selected()}
+                            onDelete={deleteCanvasElement}
+                            onSelect={() => setSelected(item.id)}
+                            onUpdate={handleOnUpdate}
+                        />
+                    );
+                })}
             </div>
         </div>
     );
