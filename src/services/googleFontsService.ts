@@ -22,8 +22,8 @@ export interface GoogleFontResponse {
 
 export async function fetchGoogleFontService() {
     const API_KEY = import.meta.env.VITE_PUBLIC_GOOGLE_FONTS_API_KEY;
-    const baseUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}`;
+    const baseUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}&sort=popularity`;
 
     const response = await httpRequest<GoogleFontResponse>(baseUrl);
-    return response.items;
+    return response.items.slice(0, 30);
 }
