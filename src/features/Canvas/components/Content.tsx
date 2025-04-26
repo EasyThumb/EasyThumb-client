@@ -1,19 +1,15 @@
+import { TextEditorPanel } from '@/components/TextEditor/TextEditorPanel';
 import { useCanvasContext } from '@/hooks/useCanvasContext';
 import { CanvasElement } from '@/types';
-import { createSignal } from 'solid-js';
+import { For } from 'solid-js';
 import { InteractiveElement } from './InteractiveElement';
 import './styles.css';
 
 export function Content() {
-    const { canvasElement, setCanvasElement, setCanvasPositions } = useCanvasContext();
-    const [selected, setSelected] = createSignal<number | null>(null);
+    // Context
+    const { canvasElement, removeElement, setCanvasPositions, selectedElement, setSelected } = useCanvasContext();
 
-    function deleteCanvasElement(id: number) {
-        const elements = new Map(canvasElement());
-        elements.delete(id);
-        setCanvasElement(elements);
-    }
-
+    // Callbacks
     function handleOnUpdate(id: number, updatedElement: Partial<CanvasElement>) {
         setCanvasPositions((prev) => {
             const updatedElements = new Map(prev);
@@ -28,19 +24,19 @@ export function Content() {
     return (
         <div class="w-full h-full p-4">
             <div class="mt-5 w-full max-w-screen-lg h-[500px] border-2 border-dashed border-gray-400 relative overflow-hidden">
-                {Array.from(canvasElement().values()).map((item) => {
-                    console.log('render items again', item);
-                    return (
+                <For each={Array.from(canvasElement().values())}>
+                    {(item) => (
                         <InteractiveElement
                             element={item}
-                            isSelected={item.id == selected()}
-                            onDelete={deleteCanvasElement}
+                            isSelected={item.id == selectedElement()}
+                            onDelete={removeElement}
                             onSelect={() => setSelected(item.id)}
                             onUpdate={handleOnUpdate}
                         />
-                    );
-                })}
+                    )}
+                </For>
             </div>
+            {selectedElement() && <TextEditorPanel />}
         </div>
     );
 }

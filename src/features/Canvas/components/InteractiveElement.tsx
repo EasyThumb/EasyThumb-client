@@ -35,14 +35,21 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                     <div
                         contentEditable={props.isSelected}
                         onInput={(e) => {
-                            const newText = (e.currentTarget as HTMLDivElement).innerText;
-                            props.onUpdate(element.id, { text: newText });
+                            const target = e.currentTarget as HTMLDivElement;
+                            const newText = target.innerText;
+
+                            const newWidth = target.offsetWidth;
+                            const newHeight = target.offsetHeight;
+
+                            props.onUpdate(element.id, { text: newText, width: newWidth, height: newHeight });
                         }}
                         style={{
                             outline: 'none',
                             'font-size': `${element.fontSize?.toString()}px`,
                             color: element.color,
                             'font-weight': 'bold',
+                            'white-space': 'pre-wrap',
+                            'word-wrap': 'break-word',
                         }}
                     >
                         {element.text}
@@ -97,9 +104,8 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                 setIsCtrlPressed(true);
             }
 
-            // Detecta la tecla "Delete"
             if (event.key === 'Delete' || event.key === 'Backspace') {
-                onDelete(element.id);
+                props.isSelected && onDelete(element.id);
             }
         };
 

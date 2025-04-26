@@ -1,12 +1,12 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 // Configuración base de Axios (opcional)
-const api = axios.create({
-    baseURL: '', // Opcional, puedes definir una base URL en .env
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+// const api = axios.create({
+//     baseURL: '', // Opcional, puedes definir una base URL en .env
+//     headers: {
+//         'Content-Type': 'application/json',
+//     },
+// });
 
 export async function httpRequest<T>(
     url: string,
