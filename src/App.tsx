@@ -1,7 +1,7 @@
 import { Route, Router } from '@solidjs/router';
 import { CanvasProvider } from './context/CanvasContext';
-import { CanvasPage } from './features/Canvas';
 import { GoogleFontsProvider } from './context/GoogleFontsContext';
+import { CanvasPage } from './features/Canvas';
 
 export default function App() {
     return (
@@ -10,7 +10,7 @@ export default function App() {
                 <GoogleFontsProvider>
                     <CanvasProvider>
                         <Router>
-                            <Route path="/" component={() => <p>Contenido principal de la página</p>} />
+                            <Route path="/" component={CanvasPage} />
                             <Route path="/Canvas" component={CanvasPage} />
                         </Router>
                     </CanvasProvider>

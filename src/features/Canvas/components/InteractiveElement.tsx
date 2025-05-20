@@ -1,4 +1,3 @@
-import { useCanvasContext } from '@/hooks/useCanvasContext';
 import { CanvasElement } from '@/types';
 import interact from 'interactjs';
 import { createEffect, createSignal, onCleanup } from 'solid-js';
@@ -17,12 +16,9 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
     // Props
     const { element, onDelete } = props;
 
-    // Data
+    // Refs
     let elementRef: HTMLDivElement | undefined;
     let imgRef: HTMLImageElement | undefined;
-
-    // Context
-    const { canvasPositions } = useCanvasContext();
 
     // State
     const [isCtrlPressed, setIsCtrlPressed] = createSignal(false);
@@ -34,15 +30,15 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                 return (
                     <div
                         contentEditable={props.isSelected}
-                        onInput={(e) => {
-                            const target = e.currentTarget as HTMLDivElement;
-                            const newText = target.innerText;
+                        // onInput={(e) => {
+                        //     const target = e.currentTarget as HTMLDivElement;
+                        //     const newText = target.innerText;
 
-                            const newWidth = target.offsetWidth;
-                            const newHeight = target.offsetHeight;
+                        //     const newWidth = target.offsetWidth;
+                        //     const newHeight = target.offsetHeight;
 
-                            props.onUpdate(element.id, { text: newText, width: newWidth, height: newHeight });
-                        }}
+                        //     //props.onUpdate(element.id, { text: newText, width: newWidth, height: newHeight });
+                        // }}
                         style={{
                             outline: 'none',
                             'font-size': `${element.fontSize?.toString()}px`,
@@ -154,18 +150,18 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                     end(event) {
                         const target = event.target;
 
-                        const x = parseFloat(target.getAttribute('data-x') || '0');
-                        const y = parseFloat(target.getAttribute('data-y') || '0');
-                        const width = parseFloat(target.style.width || '0');
-                        const height = parseFloat(target.style.height || '0');
+                        // const x = parseFloat(target.getAttribute('data-x') || '0');
+                        // const y = parseFloat(target.getAttribute('data-y') || '0');
+                        // const width = parseFloat(target.style.width || '0');
+                        // const height = parseFloat(target.style.height || '0');
 
                         // actualiza estado final
-                        props.onUpdate(element.id, {
-                            position: { x, y },
-                            width,
-                            height,
-                            aspectRatio: width / height,
-                        });
+                        // props.onUpdate(element.id, {
+                        //     position: { x, y },
+                        //     width,
+                        //     height,
+                        //     aspectRatio: width / height,
+                        // });
                     },
                 },
                 modifiers: [
@@ -193,18 +189,16 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                         target.setAttribute('data-y', y.toString());
                     },
                     end(event) {
-                        const x = parseFloat(event.target.getAttribute('data-x') || '0');
-                        const y = parseFloat(event.target.getAttribute('data-y') || '0');
-
-                        const width = parseFloat(target.style.width || '0');
-                        const height = parseFloat(target.style.height || '0');
-
-                        props.onUpdate(element.id, {
-                            position: { x, y },
-                            width,
-                            height,
-                            aspectRatio: width / height,
-                        });
+                        // const x = parseFloat(event.target.getAttribute('data-x') || '0');
+                        // const y = parseFloat(event.target.getAttribute('data-y') || '0');
+                        // const width = parseFloat(target.style.width || '0');
+                        // const height = parseFloat(target.style.height || '0');
+                        // props.onUpdate(element.id, {
+                        //     position: { x, y },
+                        //     width,
+                        //     height,
+                        //     aspectRatio: width / height,
+                        // });
                     },
                 },
                 inertia: true,
@@ -229,17 +223,17 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                width: `${canvasPositions().get(element.id)?.width ?? element.width}px`,
-                height: `${canvasPositions().get(element.id)?.height ?? element.height}px`,
+                width: `${element.width}px`,
+                height: `${element.height}px`,
                 cursor: 'move',
-                transform: `translate(${canvasPositions().get(element.id)?.position.x ?? element.position.x}px, ${canvasPositions().get(element.id)?.position.y ?? element.position.y}px)`,
+                transform: `translate(${element.position.x}px, ${element.position.y}px)`,
             }}
             onClick={(e) => {
                 e.stopPropagation();
                 props.onSelect();
             }}
-            data-x={canvasPositions().get(element.id)?.position.x ?? element.position.x}
-            data-y={canvasPositions().get(element.id)?.position.y ?? element.position.y}
+            data-x={element.position.x}
+            data-y={element.position.y}
         >
             {props.isSelected && (
                 <>

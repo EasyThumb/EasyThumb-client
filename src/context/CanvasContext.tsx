@@ -22,6 +22,8 @@ interface CanvasContextType {
     addElement: (element: CanvasElement) => void;
     removeElement: (id: number) => void;
     updateElement: (updatedElement: CanvasElement) => void;
+    zoom: Accessor<number>;
+    setZoom: Setter<number>;
     /** Sidebar */
     sidebarPanel: () => SideBarPanelEnum;
     setSideBarPanel: (panel: SideBarPanelEnum) => void;
@@ -39,6 +41,7 @@ export function CanvasProvider(props: CanvasProviderProps) {
     const [selectedElement, setSelectedElement] = createSignal<number | null>(null);
     const [canvasPositions, setCanvasPositions] = createSignal<Map<number, CanvasElement>>(new Map());
     const [sidebarPanel, setSideBarPanel] = createSignal(SideBarPanelEnum.None);
+    const [zoom, setZoom] = createSignal<number>(0.5);
 
     // Callbacks
     const addElement = (element: CanvasElement) => {
@@ -76,6 +79,8 @@ export function CanvasProvider(props: CanvasProviderProps) {
                 addElement,
                 removeElement,
                 updateElement,
+                zoom,
+                setZoom,
                 /** Side bar */
                 sidebarPanel,
                 setSideBarPanel,

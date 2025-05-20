@@ -1,12 +1,12 @@
-import { PanelHeader } from '../PanelHeader';
-import FontPicker from './components/FontPicker';
-import { createEffect, createSignal } from 'solid-js';
-import { GoogleFont } from '@/services/googleFontsService';
-import FontVariantPicker from './components/FontVariantPicker';
-import FontSizePicker from './components/FontSizePicker';
-import RangeInput from '../RangeInput';
-import { AlignJustify, AlignLeft, AlignRight } from 'lucide-solid';
 import { Alignment } from '@/constants/Alignment';
+import { GoogleFont } from '@/services/googleFontsService';
+import { AlignJustify, AlignLeft, AlignRight } from 'lucide-solid';
+import { createEffect, createSignal } from 'solid-js';
+import { PanelHeader } from '../PanelHeader';
+import RangeInput from '../RangeInput';
+import FontPicker from './components/FontPicker';
+import FontSizePicker from './components/FontSizePicker';
+import FontVariantPicker from './components/FontVariantPicker';
 
 const defaultFont: GoogleFont = {
     family: 'Montserrat',
@@ -59,6 +59,7 @@ const defaultFont: GoogleFont = {
 };
 
 export function TextEditorPanel() {
+    // Signals
     const [selectedFont, setSelectedFont] = createSignal<GoogleFont>(defaultFont);
     const [selectedFontVariants, setSelectedFontVariants] = createSignal<Array<string>>(selectedFont().variants);
     const [selectedVariant, setSelectedVariant] = createSignal<string>('');
@@ -69,6 +70,7 @@ export function TextEditorPanel() {
     const [selectedUppercase, setSelectedUppercase] = createSignal<boolean>(false);
     const [selectedUnderline, setSelectedUnderline] = createSignal<boolean>(false);
 
+    // Callbacks
     const handleFontChange = (value: GoogleFont) => {
         // console.dir(value);
         setSelectedFont(value);
@@ -112,12 +114,13 @@ export function TextEditorPanel() {
         setSelectedUnderline(!selectedUnderline());
     };
 
+    // Effects
     createEffect(() => {
         setSelectedFontVariants(selectedFont().variants);
     });
 
     return (
-        <div class="absolute top-0 right-0 w-84 z-40 p-4 h-screen text-black flex flex-col shadow-lg border-r border-gray-800">
+        <div class="absolute top-0 right-0 w-84 z-40 p-4 h-screen text-black flex flex-col shadow-lg border-r border-gray-800 bg-white">
             <PanelHeader title="Edicion Texto" onClose={() => {}} />
 
             {/* Fonts */}
