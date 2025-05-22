@@ -10,6 +10,11 @@ export type CanvasElement = {
     text?: string;
     fontSize?: number;
     color?: string;
+    lineHeight?: number;
+    letterSpacing?: number;
+    fontFamily?: string;
+    fontWeight?: string;
+    fontStyle?: string;
     // Used for svg or text type
     content?: string;
     // Used for image type

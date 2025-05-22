@@ -5,7 +5,7 @@ import './styles.css';
 
 export function Content() {
     // Context
-    const { canvasElement, selectedElement, setSelected, zoom, setZoom } = useCanvasContext();
+    const { canvasElement, selectedElement, deleteElement, setSelected, zoom, setZoom } = useCanvasContext();
 
     // Signals
     const [shouldScroll, setShouldScroll] = createSignal(false);
@@ -14,6 +14,12 @@ export function Content() {
     let containerRef: HTMLDivElement | undefined;
 
     // Callbacks
+    function onDeselectWhenClickOutside(event: MouseEvent) {
+        event.stopPropagation();
+        setSelected(null);
+    }
+
+    // Effects
     createEffect(() => {
         const canvasWidth = 1920;
         const canvasHeight = 1080;
@@ -22,15 +28,6 @@ export function Content() {
         const viewportWidth = containerRef?.offsetWidth || Number.MAX_VALUE;
         const viewportHeight = containerRef?.offsetHeight || Number.MAX_VALUE;
 
-        console.log('scaledWidth', scaledWidth);
-        console.log('scaledHeight', scaledHeight);
-
-        // console.log('viewportWidth', viewportWidth);
-        // console.log('viewportHeight', viewportHeight);
-
-        console.log('containerRef', containerRef?.clientWidth);
-        console.dir('containerRef', containerRef?.offsetHeight);
-
         setShouldScroll(scaledWidth > viewportWidth || scaledHeight > viewportHeight);
     });
 
@@ -38,12 +35,13 @@ export function Content() {
         <div
             ref={containerRef}
             class={`flex items-center justify-center w-full h-screen overflow-${shouldScroll() ? 'auto' : 'hidden'}`}
+            onClick={onDeselectWhenClickOutside}
         >
             {/* // TODO: The idea is to make zoom in heavily to navigate through canvas, have to improve it to make that feature */}
             <input
                 type="range"
                 min={-3}
-                max={0.59}
+                max={0.7}
                 step={0.01}
                 value={Math.log2(zoom())}
                 onInput={(e) => {
@@ -58,13 +56,14 @@ export function Content() {
                 style={{
                     transform: `scale(${zoom()})`,
                 }}
+                onClick={onDeselectWhenClickOutside}
             >
                 <For each={Array.from(canvasElement().values())}>
                     {(item) => (
                         <InteractiveElement
                             element={item}
                             isSelected={item.id == selectedElement()}
-                            onDelete={() => {}}
+                            onDelete={deleteElement}
                             onSelect={() => setSelected(item.id)}
                             onUpdate={() => {}}
                         />

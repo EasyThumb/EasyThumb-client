@@ -20,8 +20,9 @@ interface CanvasContextType {
     canvasPositions: () => Map<number, CanvasElement>;
     setCanvasPositions: Setter<Map<number, CanvasElement>>;
     addElement: (element: CanvasElement) => void;
-    removeElement: (id: number) => void;
+    deleteElement: (id: number) => void;
     updateElement: (updatedElement: CanvasElement) => void;
+    getSelectedElement: () => CanvasElement | undefined;
     zoom: Accessor<number>;
     setZoom: Setter<number>;
     /** Sidebar */
@@ -34,6 +35,7 @@ export const CanvasContext = createContext<CanvasContextType>();
 interface CanvasProviderProps {
     children: JSX.Element;
 }
+
 export function CanvasProvider(props: CanvasProviderProps) {
     // Signals
     const [googleFonts, setGoogleFonts] = createSignal<GoogleFont[]>([]);
@@ -41,28 +43,32 @@ export function CanvasProvider(props: CanvasProviderProps) {
     const [selectedElement, setSelectedElement] = createSignal<number | null>(null);
     const [canvasPositions, setCanvasPositions] = createSignal<Map<number, CanvasElement>>(new Map());
     const [sidebarPanel, setSideBarPanel] = createSignal(SideBarPanelEnum.None);
-    const [zoom, setZoom] = createSignal<number>(0.5);
+    const [zoom, setZoom] = createSignal<number>(1);
 
     // Callbacks
-    const addElement = (element: CanvasElement) => {
+    function addElement(element: CanvasElement) {
         setCanvasElement((prevElements) => new Map(prevElements).set(element.id, element));
-    };
+    }
 
-    const removeElement = (id: number) => {
+    function deleteElement(id: number) {
         setCanvasElement((prevElements) => {
             const newElements = new Map(prevElements);
             newElements.delete(id);
             return newElements;
         });
-    };
+    }
 
-    const updateElement = (updatedElement: CanvasElement) => {
+    function updateElement(updatedElement: CanvasElement) {
         setCanvasElement((prevElements) => new Map(prevElements).set(updatedElement.id, updatedElement));
-    };
+    }
 
-    const setSelected = (id: number | null) => {
+    function setSelected(id: number | null) {
         setSelectedElement(id);
-    };
+    }
+
+    function getSelectedElement(): CanvasElement | undefined {
+        return canvasElement().get(selectedElement() || 0);
+    }
 
     return (
         <CanvasContext.Provider
@@ -77,8 +83,9 @@ export function CanvasProvider(props: CanvasProviderProps) {
                 canvasPositions,
                 setCanvasPositions,
                 addElement,
-                removeElement,
+                deleteElement,
                 updateElement,
+                getSelectedElement,
                 zoom,
                 setZoom,
                 /** Side bar */

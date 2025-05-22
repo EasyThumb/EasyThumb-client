@@ -1,4 +1,6 @@
 import { Alignment } from '@/constants/Alignment';
+import { useCanvasContext } from '@/hooks/useCanvasContext';
+import { useGoogleFonts } from '@/hooks/useGoogleFonts';
 import { GoogleFont } from '@/services/googleFontsService';
 import { AlignJustify, AlignLeft, AlignRight } from 'lucide-solid';
 import { createEffect, createSignal } from 'solid-js';
@@ -8,7 +10,11 @@ import FontPicker from './components/FontPicker';
 import FontSizePicker from './components/FontSizePicker';
 import FontVariantPicker from './components/FontVariantPicker';
 
-const defaultFont: GoogleFont = {
+interface TextEditorPanelProps {
+    onCloseEditor: () => void;
+}
+
+const DefaultFont: GoogleFont = {
     family: 'Montserrat',
     variants: [
         '100',
@@ -56,44 +62,76 @@ const defaultFont: GoogleFont = {
     category: 'sans-serif',
     kind: 'webfonts#webfont',
     menu: 'https://fonts.gstatic.com/s/montserrat/v29/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw_aX8.ttf',
-};
+} as const;
+const DefaultLineHeight = 1.0 as const;
+const DefaultLetterSpacing = 0 as const;
+const DefaultFontSize = '16' as const;
 
-export function TextEditorPanel() {
+export function TextEditorPanel(props: TextEditorPanelProps) {
+    // Context
+    const { updateElement, getSelectedElement } = useCanvasContext();
+    const { fonts } = useGoogleFonts();
+
     // Signals
-    const [selectedFont, setSelectedFont] = createSignal<GoogleFont>(defaultFont);
+    const [selectedFont, setSelectedFont] = createSignal<GoogleFont>(DefaultFont);
     const [selectedFontVariants, setSelectedFontVariants] = createSignal<Array<string>>(selectedFont().variants);
     const [selectedVariant, setSelectedVariant] = createSignal<string>('');
-    const [selectedFontSize, setSelectedFontSize] = createSignal<string>('16');
-    const [selectedInterlineado, setSelectedInterlineado] = createSignal<number>(12);
-    const [selectedEspaciado, setSelectedEspaciado] = createSignal<number>(12);
+    const [selectedFontSize, setSelectedFontSize] = createSignal<string>(DefaultFontSize);
+    const [selectedLineHeight, setSelectedLineHeight] = createSignal<number>(DefaultLineHeight);
+    const [selectedLetterSpacing, setSelectedLetterSpacing] = createSignal<number>(DefaultLetterSpacing);
     const [selectedAlignment, setSelectedAlignment] = createSignal<Alignment>(Alignment.Left);
     const [selectedUppercase, setSelectedUppercase] = createSignal<boolean>(false);
     const [selectedUnderline, setSelectedUnderline] = createSignal<boolean>(false);
 
     // Callbacks
     const handleFontChange = (value: GoogleFont) => {
-        // console.dir(value);
         setSelectedFont(value);
+        const element = getSelectedElement();
+        if (element) {
+            updateElement({ ...element, fontFamily: value.family });
+        }
     };
 
     const handleVariantChange = (variant: string) => {
-        // console.dir(variant);
         setSelectedVariant(variant);
+        const element = getSelectedElement();
+        if (element) {
+            // check if the variant parameter comes with style and weight
+            let fontStyle: string | undefined = undefined;
+            let fontWeight: string = variant;
+            const match = variant.match(/^(\d{3})([a-zA-Z]*)$/);
+            if (match) {
+                const [, weightStr, styleStr] = match;
+                fontStyle = styleStr || 'normal';
+                fontWeight = weightStr;
+            }
+            updateElement({ ...element, fontWeight: fontWeight, fontStyle: fontStyle });
+        }
     };
 
     const handleFontSizeChange = (size: string) => {
-        // console.dir(size);
         setSelectedFontSize(size);
+        const element = getSelectedElement();
+        const sizeNumber = Number(size);
+        if (element && !isNaN(+sizeNumber)) {
+            updateElement({ ...element, fontSize: sizeNumber });
+        }
     };
 
-    const handleInterlineadoChange = (value: number) => {
-        // console.dir(value);
-        setSelectedInterlineado(value);
+    const handleLineHeightChange = (value: number) => {
+        setSelectedLineHeight(value);
+        const element = getSelectedElement();
+        if (element) {
+            updateElement({ ...element, lineHeight: value });
+        }
     };
 
-    const handleEspaciadoChange = (value: number) => {
-        // console.dir(value);
-        setSelectedEspaciado(value);
+    const handleLetterSpacingChange = (value: number) => {
+        setSelectedLetterSpacing(value);
+        const element = getSelectedElement();
+        if (element) {
+            updateElement({ ...element, letterSpacing: value });
+        }
     };
 
     const handleAlignmentChange = (event: MouseEvent) => {
@@ -116,12 +154,25 @@ export function TextEditorPanel() {
 
     // Effects
     createEffect(() => {
+        const canvasElement = getSelectedElement();
+        if (canvasElement && canvasElement.type == 'text') {
+            setSelectedFontSize(canvasElement.fontSize?.toString() ?? DefaultFontSize);
+            setSelectedLetterSpacing(canvasElement.letterSpacing ?? DefaultLetterSpacing);
+            setSelectedLineHeight(canvasElement.lineHeight ?? DefaultLineHeight);
+            setSelectedVariant(canvasElement.fontWeight ?? '');
+            //  Settings fonts
+            const selectedFont = fonts().filter((font) => font.family == canvasElement.fontFamily);
+            setSelectedFont(selectedFont.length ? selectedFont[0] : DefaultFont);
+        }
+    });
+
+    createEffect(() => {
         setSelectedFontVariants(selectedFont().variants);
     });
 
     return (
         <div class="absolute top-0 right-0 w-84 z-40 p-4 h-screen text-black flex flex-col shadow-lg border-r border-gray-800 bg-white">
-            <PanelHeader title="Edicion Texto" onClose={() => {}} />
+            <PanelHeader title="Edicion Texto" onClose={props.onCloseEditor} />
 
             {/* Fonts */}
             <div>
@@ -141,11 +192,25 @@ export function TextEditorPanel() {
                 </div>
             </div>
 
-            {/* Interlineado */}
-            <RangeInput label="Interlineado" value={selectedInterlineado} onChange={handleInterlineadoChange} min={0} max={24} />
+            {/* Line Height */}
+            <RangeInput
+                label="Interlineado"
+                value={selectedLineHeight}
+                onChange={handleLineHeightChange}
+                min={0.5}
+                max={5}
+                step={0.1}
+            />
 
-            {/* Espaciado */}
-            <RangeInput label="Espaciado" value={selectedEspaciado} onChange={handleEspaciadoChange} min={0} max={24} />
+            {/* Letter Spacing */}
+            <RangeInput
+                label="Espaciado"
+                value={selectedLetterSpacing}
+                onChange={handleLetterSpacingChange}
+                min={-10}
+                max={20}
+                step={0.1}
+            />
 
             {/* Botones de acciones */}
             <div class="flex justify-between items-center pt-2">

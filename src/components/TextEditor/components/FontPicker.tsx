@@ -9,8 +9,10 @@ type FontPickerProps = {
 };
 
 export default function FontPicker({ value, onChange }: FontPickerProps) {
+    // Context
     const { fonts, fetch } = useGoogleFonts();
 
+    // Effects
     onMount(() => {
         try {
             if (fonts().length == 0) {

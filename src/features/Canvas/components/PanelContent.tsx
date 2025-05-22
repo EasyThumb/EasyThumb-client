@@ -18,7 +18,7 @@ export function PanelContent() {
         }
     };
     return (
-        <div class={cn('w-full h-full  text-zinc-100')}>
+        <div class={cn('w-full h-full  text-zinc-100 border-r max-w-[333px]')}>
             <div
                 class={cn(
                     'w-80 h-full w-full nmax-w-[1000px] p-4 space-y-6 text-neutral-800 dark:text-white dark:custom-dark-bg'

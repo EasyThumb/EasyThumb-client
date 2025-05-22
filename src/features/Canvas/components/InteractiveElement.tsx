@@ -30,22 +30,17 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                 return (
                     <div
                         contentEditable={props.isSelected}
-                        // onInput={(e) => {
-                        //     const target = e.currentTarget as HTMLDivElement;
-                        //     const newText = target.innerText;
-
-                        //     const newWidth = target.offsetWidth;
-                        //     const newHeight = target.offsetHeight;
-
-                        //     //props.onUpdate(element.id, { text: newText, width: newWidth, height: newHeight });
-                        // }}
                         style={{
                             outline: 'none',
-                            'font-size': `${element.fontSize?.toString()}px`,
+                            'font-size': `${element.fontSize}px`,
                             color: element.color,
-                            'font-weight': 'bold',
+                            'font-weight': element.fontWeight,
+                            'font-style': element.fontStyle,
                             'white-space': 'pre-wrap',
                             'word-wrap': 'break-word',
+                            'line-height': element.lineHeight,
+                            'letter-spacing': `${element.letterSpacing}px`,
+                            'font-family': element.fontFamily,
                         }}
                     >
                         {element.text}
@@ -147,22 +142,6 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                         target.setAttribute('data-x', x.toString());
                         target.setAttribute('data-y', y.toString());
                     },
-                    end(event) {
-                        const target = event.target;
-
-                        // const x = parseFloat(target.getAttribute('data-x') || '0');
-                        // const y = parseFloat(target.getAttribute('data-y') || '0');
-                        // const width = parseFloat(target.style.width || '0');
-                        // const height = parseFloat(target.style.height || '0');
-
-                        // actualiza estado final
-                        // props.onUpdate(element.id, {
-                        //     position: { x, y },
-                        //     width,
-                        //     height,
-                        //     aspectRatio: width / height,
-                        // });
-                    },
                 },
                 modifiers: [
                     interact.modifiers.restrictEdges({
@@ -187,18 +166,6 @@ export const InteractiveElement = (props: CanvasElementComponentProps) => {
                         target.style.transform = `translate(${x}px, ${y}px)`;
                         target.setAttribute('data-x', x.toString());
                         target.setAttribute('data-y', y.toString());
-                    },
-                    end(event) {
-                        // const x = parseFloat(event.target.getAttribute('data-x') || '0');
-                        // const y = parseFloat(event.target.getAttribute('data-y') || '0');
-                        // const width = parseFloat(target.style.width || '0');
-                        // const height = parseFloat(target.style.height || '0');
-                        // props.onUpdate(element.id, {
-                        //     position: { x, y },
-                        //     width,
-                        //     height,
-                        //     aspectRatio: width / height,
-                        // });
                     },
                 },
                 inertia: true,

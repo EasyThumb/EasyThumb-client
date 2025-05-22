@@ -4,11 +4,12 @@ type RangeInputProps = {
     label?: string;
     min?: number;
     max?: number;
+    step?: number;
     value: Accessor<number>;
     onChange: (value: number) => void;
 };
 
-export default function RangeInput({ label = '', min = 0, max = 100, value, onChange }: RangeInputProps) {
+export default function RangeInput({ label = '', min = 0, max = 100, step = 1, value, onChange }: RangeInputProps) {
     return (
         <div>
             {label && <label class="block text-sm font-medium mb-1">{label}</label>}
@@ -20,6 +21,7 @@ export default function RangeInput({ label = '', min = 0, max = 100, value, onCh
                     onInput={(e) => onChange(Number(e.target.value))}
                     min={min}
                     max={max}
+                    step={step}
                 />
                 <input
                     class="w-full"
@@ -28,6 +30,7 @@ export default function RangeInput({ label = '', min = 0, max = 100, value, onCh
                     onInput={(e) => onChange(Number(e.target.value))}
                     min={min}
                     max={max}
+                    step={step}
                 />
             </div>
         </div>
